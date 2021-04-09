@@ -42,16 +42,34 @@ int main(int argc, char **argv) {
             seed = atoi(optarg);
             // your code here
             // error handling
+            if(seed<0)
+            {
+              printf("seed is positive\n");
+              return 1;
+            }
+            
             break;
           case 1:
             array_size = atoi(optarg);
             // your code here
             // error handling
+            if(array_size<=0)
+            {
+              printf("array_size is positive\n");
+              return 1;
+
+            }
+            
             break;
           case 2:
             pnum = atoi(optarg);
             // your code here
             // error handling
+            if(pnum<1)
+            {
+              printf("At least one parallel process must be running");
+              return 1;
+            }
             break;
           case 3:
             with_files = true;
@@ -91,8 +109,12 @@ int main(int argc, char **argv) {
   struct timeval start_time;
   gettimeofday(&start_time, NULL);
 
+  int pipefd[2];
+  pipe(pipefd);
+  
   for (int i = 0; i < pnum; i++) {
     pid_t child_pid = fork();
+    
     if (child_pid >= 0) {
       // successful fork
       active_child_processes += 1;
@@ -100,11 +122,40 @@ int main(int argc, char **argv) {
         // child process
 
         // parallel somehow
+        int begin=array_size/pnum*i;
+        int end=array_size/pnum*(i+1);
+
+
 
         if (with_files) {
           // use files here
+          struct MinMax min_max=GetMinMax(array,begin,end);
+          char minFile[12+pnum];
+          char maxFile[12+pnum];
+          sprintf(minFile,"minFile%d.txt",i);
+          sprintf(maxFile,"maxFile%d.txt",i);
+          
+          FILE* fmin=fopen(minFile,"w");
+          FILE* fmax=fopen(maxFile,"w");
+
+          fprintf(fmin,"%d",min_max.min);
+          fprintf(fmax,"%d",min_max.max);
+
+          fclose(fmin);
+          fclose(fmax);
+
+          
+
+
+          
         } else {
           // use pipe here
+          struct MinMax min_max=GetMinMax(array,begin,end);
+
+          write(pipefd[1], &min_max.min, sizeof(int));
+          write(pipefd[1], &min_max.max, sizeof(int));
+
+
         }
         return 0;
       }
@@ -117,6 +168,8 @@ int main(int argc, char **argv) {
 
   while (active_child_processes > 0) {
     // your code here
+    wait(0);
+    
 
     active_child_processes -= 1;
   }
@@ -131,8 +184,28 @@ int main(int argc, char **argv) {
 
     if (with_files) {
       // read from files
+      char minFile[12+pnum];
+      char maxFile[12+pnum];
+      sprintf(minFile,"minFile%d.txt",i);
+      sprintf(maxFile,"maxFile%d.txt",i);
+          
+      FILE* fmin=fopen(minFile,"r");
+      FILE* fmax=fopen(maxFile,"r");
+
+      fscanf(fmin,"%d",&min);
+      fscanf(fmax,"%d",&max);
+
+      fclose(fmin);
+      fclose(fmax);
+
+
+
     } else {
       // read from pipes
+    
+      read(pipefd[0], &min, sizeof(int));
+      read(pipefd[0], &max, sizeof(int));
+      
     }
 
     if (min < min_max.min) min_max.min = min;
