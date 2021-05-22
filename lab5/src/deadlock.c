@@ -16,7 +16,7 @@ void *dosomework_1(void *param) {
    /**
    * Do some work */
    pthread_mutex_unlock(& mutex2);
-   pthread_mutex_unlock(& mutex2);
+   pthread_mutex_unlock(& mutex1);
    pthread_exit(0); } /*
    thread2 runs in this function
    */ void *dosomework_2(void *param) {
