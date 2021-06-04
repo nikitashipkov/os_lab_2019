@@ -27,6 +27,7 @@ int main() {
 
   memset(&servaddr, 0, kSize);
   servaddr.sin_family = AF_INET;
+  printf("fsdfsd = %d\n", htonl(INADDR_ANY));
   servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
   servaddr.sin_port = htons(SERV_PORT);
 

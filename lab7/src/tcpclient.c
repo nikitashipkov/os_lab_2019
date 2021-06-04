@@ -28,7 +28,7 @@ int main(int argc, char *argv[]) {
 
   memset(&servaddr, 0, SIZE);
   servaddr.sin_family = AF_INET;
-
+  printf("addr1 = %d aadr2=%s \n", AF_INET, argv[1] );
   if (inet_pton(AF_INET, argv[1], &servaddr.sin_addr) <= 0) {
     perror("bad address");
     exit(1);
